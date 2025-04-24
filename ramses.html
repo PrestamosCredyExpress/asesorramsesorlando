@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Solicita tu préstamo rápido</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f4f4;
+    }
+
+    .blurred {
+      filter: blur(10px);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    /* Estilos para el overlay del video */
+    .video-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .video-alert {
+      background-color: #ff0000;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 1.2rem;
+      text-align: center;
+      margin-bottom: 20px;
+      animation: pulseAlert 2s infinite;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 600px;
+    }
+
+    @keyframes pulseAlert {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+    }
+
+    .video-container {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 16/9;
+    }
+
+    .video-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .start-btn {
+      background: #28a745;
+      color: white;
+      padding: 15px 30px;
+      font-size: 1.5rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      animation: shake 0.8s infinite;
+      margin-top: 20px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    @keyframes shake {
+      0% { transform: translate(-50%, -50%) translate(1px, 1px) rotate(0deg); }
+      10% { transform: translate(-50%, -50%) translate(-1px, -2px) rotate(-1deg); }
+      20% { transform: translate(-50%, -50%) translate(-3px, 0px) rotate(1deg); }
+      30% { transform: translate(-50%, -50%) translate(3px, 2px) rotate(0deg); }
+      40% { transform: translate(-50%, -50%) translate(1px, -1px) rotate(1deg); }
+      50% { transform: translate(-50%, -50%) translate(-1px, 2px) rotate(-1deg); }
+      60% { transform: translate(-50%, -50%) translate(-3px, 1px) rotate(0deg); }
+      70% { transform: translate(-50%, -50%) translate(3px, 1px) rotate(-1deg); }
+      80% { transform: translate(-50%, -50%) translate(-1px, -1px) rotate(1deg); }
+      90% { transform: translate(-50%, -50%) translate(1px, 2px) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) translate(1px, -2px) rotate(-1deg); }
+    }
+
+    /* Contenido principal (se muestra después del video) */
+    .main-content {
+      display: none;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    header {
+      background-color: #0057A0;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .titulo-animado {
+      font-size: 1.8rem;
+      font-weight: bold;
+      overflow: hidden;
+      white-space: nowrap;
+      color: white;
+      animation: slideIn 15s linear infinite;
+    }
+
+    @keyframes slideIn {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* Sección del contador */
+    .contador-section {
+      margin: 30px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .contador-texto {
+      background-color: #28a745;
+      color: white;
+      font-weight: bold;
+      padding: 10px 20px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      text-align: center;
+      animation: blink 1s infinite, glow 2s infinite alternate;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    @keyframes glow {
+      0% { text-shadow: 0 0 5px #ffffff; }
+      100% { text-shadow: 0 0 15px #00ff00; }
+    }
+
+    .counter {
+      display: inline-flex;
+      font-size: 40px;
+      background: #222;
+      color: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .digit {
+      padding: 8px 12px;
+      border-right: 2px solid #000;
+    }
+
+    .digit:last-child {
+      border-right: none;
+    }
+
+    /* Sección de testimonios */
+    .testimonios-section {
+      margin: 30px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .testimonios-btn {
+      background-color: #0057A0;
+      color: white;
+      font-size: 1.5rem;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      animation: bounceBtn 1s infinite;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    @keyframes bounceBtn {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.05); }
+      60% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    .reseñas-container {
+      margin-top: 20px;
+      display: none;
+      width: 100%;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .reseña {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    .estrellas {
+      color: gold;
+      font-size: 1.5rem;
+      margin-bottom: 5px;
+    }
+
+    /* Botón de WhatsApp */
+    .whatsapp-button-container {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+      width: 100%;
+    }
+
+    .whatsapp-button {
+      background-color: #25D366;
+      color: white;
+      padding: 15px 25px;
+      border: none;
+      border-radius: 30px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      text-decoration: none;
+      text-align: center;
+      width: 100%;
+      max-width: 400px;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+
+    /* Estilos responsivos para móviles */
+    @media (max-width: 768px) {
+      .video-alert {
+        font-size: 1rem;
+        padding: 12px;
+      }
+      
+      .titulo-animado {
+        font-size: 1.3rem;
+        animation: slideIn 10s linear infinite;
+      }
+      
+      .start-btn {
+        padding: 12px 24px;
+        font-size: 1.2rem;
+      }
+      
+      .contador-texto {
+        font-size: 1rem;
+        padding: 8px 15px;
+      }
+      
+      .counter {
+        font-size: 30px;
+      }
+      
+      .testimonios-btn, .whatsapp-button {
+        font-size: 1.2rem;
+        padding: 12px 20px;
+      }
+      
+      .reseña {
+        padding: 10px;
+      }
+      
+      .estrellas {
+        font-size: 1.2rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .video-alert {
+        font-size: 0.9rem;
+      }
+      
+      .titulo-animado {
+        font-size: 1.1rem;
+        animation: slideIn 8s linear infinite;
+      }
+      
+      .contador-texto {
+        font-size: 0.9rem;
+      }
+      
+      .counter {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Overlay del video -->
+  <div class="video-overlay" id="videoOverlay">
+    <div class="video-alert">
+      IMPORTANTE: Ver el video obligatoriamente para que entiendas
+    </div>
+    <div class="video-container">
+      <iframe id="videoIframe" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <button class="start-btn" onclick="startVideo()">Solicitar Préstamo</button>
+  </div>
+
+  <!-- Contenido principal (se muestra después del video) -->
+  <div class="main-content" id="mainContent">
+    <header>
+      <div class="titulo-animado">
+        Recibe tu préstamo en menos de 24 horas con el Sr. Ramsés Orlando
+      </div>
+    </header>
+
+    <div class="contador-section">
+      <div class="contador-texto">
+        Personas que están recibiendo su préstamo en línea ahora mismo
+      </div>
+      <div class="counter" id="counter"></div>
+    </div>
+
+    <section class="testimonios-section">
+      <button class="testimonios-btn" onclick="toggleTestimonios()">Ver Testimonios</button>
+      <div class="reseñas-container" id="testimonios">
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"¡Increíble servicio! Recibí mi préstamo en solo 3 horas sin complicaciones."</p>
+          <strong>- Carlos M.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"El Sr. Ramsés es muy profesional, me explicó todo claramente y el dinero llegó rápido."</p>
+          <strong>- Ana L.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Por fin encontré a alguien confiable para préstamos rápidos. 100% recomendado."</p>
+          <strong>- Roberto G.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Sin papeleos innecesarios, todo fue directo al grano. Excelente experiencia."</p>
+          <strong>- Sofía R.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Necesitaba dinero urgente y me ayudaron cuando otros me dijeron que no."</p>
+          <strong>- Miguel Á.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Las tasas son justas y el trato es excelente. Volveré a usarlos."</p>
+          <strong>- Patricia V.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Todo el proceso fue transparente, sin letras pequeñas ni sorpresas."</p>
+          <strong>- Javier T.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"Respondieron todas mis dudas con paciencia. Muy satisfecho con el servicio."</p>
+          <strong>- Lucía H.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"El dinero estaba en mi cuenta antes de lo prometido. ¡Gracias!"</p>
+          <strong>- Omar C.</strong>
+        </div>
+        <div class="reseña">
+          <div class="estrellas">★★★★★</div>
+          <p>"La mejor opción para préstamos rápidos y seguros. No busques más."</p>
+          <strong>- Elena D.</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="whatsapp-button-container">
+      <a class="whatsapp-button" href="https://wa.me/18098128542?text=Hola%2C%20quiero%20solicitar%20mi%20pr%C3%A9stamo%20ahora" target="_blank" id="whatsappButton">
+        ¡SOLICITA TU PRÉSTAMO AHORA!
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Inicializar contador
+    let visits = localStorage.getItem("visits") || 4572;
+    visits = parseInt(visits) + 1;
+    localStorage.setItem("visits", visits);
+
+    // Mostrar contador
+    const digits = visits.toString().padStart(4, '0').split('');
+    const counter = document.getElementById("counter");
+    counter.innerHTML = '';
+    digits.forEach(d => {
+      const digitEl = document.createElement("div");
+      digitEl.className = "digit";
+      digitEl.textContent = d;
+      counter.appendChild(digitEl);
+    });
+
+    // Función para mostrar/ocultar testimonios
+    function toggleTestimonios() {
+      const testimonios = document.getElementById("testimonios");
+      testimonios.style.display = testimonios.style.display === "block" ? "none" : "block";
+    }
+
+    // Función para iniciar el video
+    function startVideo() {
+      const iframe = document.getElementById("videoIframe");
+      iframe.src = "https://www.youtube.com/embed/g6xUZFRvG5k?autoplay=1&enablejsapi=1&controls=0&modestbranding=1";
+      
+      document.querySelector(".start-btn").style.display = "none";
+
+      // Cargar YouTube API si no está cargada
+      if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      }
+
+      // Crear reproductor cuando la API esté lista
+      window.onYouTubeIframeAPIReady = function() {
+        const player = new YT.Player('videoIframe', {
+          events: {
+            'onStateChange': function(event) {
+              if (event.data === YT.PlayerState.ENDED) {
+                // Ocultar overlay del video
+                document.getElementById("videoOverlay").style.display = "none";
+                // Mostrar contenido principal
+                document.getElementById("mainContent").style.display = "block";
+                // Habilitar scroll
+                document.body.style.overflow = "auto";
+              }
+            }
+          }
+        });
+      };
+    }
+
+    // Iniciar automáticamente en móviles (opcional)
+    if (/Mobi|Android/i.test(navigator.userAgent)) {
+      document.querySelector('.start-btn').click();
+    }
+  </script>
+
+</body>
+</html>
